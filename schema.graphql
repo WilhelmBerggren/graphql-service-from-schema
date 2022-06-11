@@ -1,0 +1,32 @@
+directive @SQLCreateTable(command: String) on OBJECT
+directive @SQLInsert(command: String) on FIELD_DEFINITION
+directive @SQLFindAll(command: String) on FIELD_DEFINITION
+directive @SQLFind(command: String) on FIELD_DEFINITION
+
+type User
+  @SQLCreateTable(
+    command: "create table if not exists Users(\"id\" text, \"username\" text);"
+  ) {
+  id: ID!
+  username: String!
+}
+
+type Book
+  @SQLCreateTable(
+    command: "create table if not exists Books(\"id\" text, \"title\" text);"
+  ) {
+  id: ID!
+  title: String
+}
+
+type Query {
+  users(first: Int!): [User] @SQLFindAll(command: "select * from users limit ?")
+  books(first: Int!): [User] @SQLFindAll(command: "select * from books limit ?")
+  user(id: ID!): User @SQLFind(command: "select * from users where id = ?")
+  book(id: ID!): Book @SQLFind(command: "select * from books where id = ?")
+}
+
+type Mutation {
+  createUser(username: String): User
+    @SQLInsert(command: "insert into users ( id, username ) values ( ?, ? )")
+}

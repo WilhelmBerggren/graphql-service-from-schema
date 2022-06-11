@@ -1,0 +1,17 @@
+{
+  "name": "graphql-service-from-schema",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^17.0.42",
+    "apollo-server": "^3.8.2",
+    "better-sqlite3": "^7.5.3",
+    "graphql": "^16.5.0",
+    "ts-node": "^10.8.1",
+    "typescript": "^4.7.3"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.5.0"
+  }
+}

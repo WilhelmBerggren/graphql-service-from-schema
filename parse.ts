@@ -1,86 +1,60 @@
-import { ApolloServer } from "apollo-server";
-import Sqlite from "better-sqlite3";
-import fs from "fs";
 import {
+  DocumentNode,
   FieldDefinitionNode,
+  Kind,
   ObjectTypeDefinitionNode,
-  parse,
   StringValueNode,
-  visit,
 } from "graphql";
+import { createMutation, createQuery } from "./db";
+import { ObjectStringLiteral, QueryCommands } from "./typeUtils";
 
-/** TODO:
- *
- * - Generalise resolver generation by root type
- * - Dataloaders based on @key directive
- * - Joins or relations
- */
+const sqlCommands = (node: ObjectTypeDefinitionNode | FieldDefinitionNode) =>
+  (node.directives || [])
+    .filter((directive) => directive.name.value === "SQL")
+    .flatMap(({ arguments: args }) =>
+      (args || []).filter((arg) => arg.name.value === "command")
+    );
 
-const schema = fs.readFileSync("schema.graphql").toString();
+const extractCommands = (
+  node: readonly (ObjectTypeDefinitionNode | FieldDefinitionNode)[]
+) =>
+  node.reduce<ObjectStringLiteral>((commands, childNode) => {
+    sqlCommands(childNode)
+      .map((command) => (command.value as StringValueNode).value)
+      .forEach((value) => (commands[childNode.name.value] = value));
+    return commands;
+  }, {});
 
-const createCommands: { [key: string]: string } = {};
-const resolverCommands: { [key: string]: { [key: string]: string } } = {};
+const objectDefinitions = (node: DocumentNode) =>
+  node.definitions.filter(
+    (definition) => definition.kind === Kind.OBJECT_TYPE_DEFINITION
+  ) as ObjectTypeDefinitionNode[];
 
-function visitCommands(
-  node: ObjectTypeDefinitionNode | FieldDefinitionNode,
-  visit: (name: string, command: string) => void
-) {
-  for (let directive of node.directives || []) {
-    if (directive.name.value === "SQL") {
-      for (let argument of directive.arguments || []) {
-        if (argument.name.value === "command") {
-          visit(node.name.value, (argument.value as StringValueNode).value);
-        }
-      }
+const queryCommands = (objectDefinitions: ObjectTypeDefinitionNode[]) =>
+  objectDefinitions.reduce<QueryCommands>((commands, node) => {
+    if (node.fields) {
+      commands[node.name.value] = extractCommands(node.fields);
     }
-  }
-}
+    return commands;
+  }, {});
 
-visit(parse(schema), {
-  ObjectTypeDefinition: {
-    enter(node) {
-      visitCommands(node, (name, command) => (createCommands[name] = command));
-      resolverCommands[node.name.value] = {};
-      for (let field of node.fields || []) {
-        visitCommands(
-          field,
-          (name, command) => (resolverCommands[node.name.value][name] = command)
-        );
-      }
-    },
-  },
-});
+export const createCommands = (typeDefs: DocumentNode) =>
+  extractCommands(objectDefinitions(typeDefs));
 
-console.log(JSON.stringify(createCommands, null, 2));
-console.log(JSON.stringify(resolverCommands, null, 2));
-
-const db = new Sqlite("sqlite.db", { verbose: console.log });
-for (let command of Object.values(createCommands)) {
-  console.log(db.prepare(command).run());
-}
-
-const server = new ApolloServer({
-  typeDefs: schema,
-  resolvers: Object.fromEntries(
-    Object.entries(resolverCommands).map(([root, fields]) => [
-      root,
-      Object.fromEntries(
-        Object.entries(fields).map(([field, command]) => [
-          field,
-          (_: any, args: any) => {
-            if (root === "Mutation") {
-              const id = Math.random().toString();
-              db.prepare(command).run(id, Object.values(args));
-              return { id, ...args };
-            }
-            const verb = field[field.length - 1] === "s" ? "all" : "get";
-
-            return db.prepare(command)[verb](Object.values(args));
-          },
-        ])
-      ),
-    ])
-  ),
-});
-
-server.listen().then(({ url }) => console.log("Server ready at", url));
+export const createResolvers = (typeDefs: DocumentNode) =>
+  Object.fromEntries(
+    Object.entries(queryCommands(objectDefinitions(typeDefs))).map(
+      ([root, fields]) => [
+        root,
+        Object.fromEntries(
+          Object.entries(fields).map(([field, command]) => [
+            field,
+            (root === "Mutation" ? createMutation : createQuery)(
+              command,
+              field
+            ),
+          ])
+        ),
+      ]
+    )
+  );

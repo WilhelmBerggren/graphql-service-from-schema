@@ -10,6 +10,7 @@
     "docker": "docker build -t gql . && docker run -p 4000:4000 -it gql"
   },
   "dependencies": {
+    "@apollo/subgraph": "^2.0.5",
     "@types/node": "^17.0.42",
     "apollo-server": "^3.8.2",
     "better-sqlite3": "^7.5.3",

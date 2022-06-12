@@ -10,7 +10,7 @@ export const initDb = (typeDefs: DocumentNode) => {
   );
 };
 
-export const makeQuery =
+export const makeResolver =
   (root: string, field: string, command: string) =>
   (parent: any, args: any) => {
     if (root === "Mutation") {

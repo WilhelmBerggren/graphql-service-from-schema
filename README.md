@@ -36,7 +36,7 @@ Takes in a parsed GraphQL schema, and for each field which has a defined SQL com
 
 Takes in a parsed GraphQL schema, and uses the aforementioned `getCommands` to execute each object's respective table.
 
-### `makeQuery`
+### `makeResolver`
 
 Takes in the name of a root, a field and a command to access that field. Returns a resolver which executes that command.
 
@@ -47,4 +47,3 @@ The entrypoint of the service. Parses the typeDefs, initialises the database and
 # TODO:
 
 - Dataloaders based on @key directive
-- Joins or relations

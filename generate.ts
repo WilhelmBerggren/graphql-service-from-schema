@@ -5,7 +5,7 @@ import {
   ObjectTypeDefinitionNode,
   StringValueNode,
 } from "graphql";
-import { makeQuery } from "./db";
+import { makeResolver } from "./db";
 
 export const getCommands = (typeDefs: DocumentNode) => {
   return typeDefs.definitions
@@ -39,7 +39,7 @@ export const getResolvers = (typeDefs: DocumentNode) =>
             ])
             .filter(([_, command]) => Boolean(command))
             .map(([name, command]) => {
-              return [name, makeQuery(object.name.value, name, command)];
+              return [name, makeResolver(object.name.value, name, command)];
             })
         ),
       ])

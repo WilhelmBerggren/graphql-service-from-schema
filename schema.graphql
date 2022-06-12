@@ -17,7 +17,8 @@ type Book
 }
 
 type Query {
-  users(first: Int!): [User] @SQL(command: "select * from users limit ?")
+  users(first: Int!, offset: Int!): [User]
+    @SQL(command: "select * from users limit ? offset ?")
   books(first: Int!): [User] @SQL(command: "select * from books limit ?")
   user(id: ID!): User @SQL(command: "select * from users where id = ?")
   book(id: ID!): Book @SQL(command: "select * from books where id = ?")

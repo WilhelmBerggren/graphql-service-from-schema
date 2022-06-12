@@ -2,6 +2,8 @@
 
 Generate a backend from a GraphQL schema, using a custom directive called `@SQL`.
 
+[Live Example](https://graphql-service-from-schema.onrender.com) (in a free tier container)
+
 ```graphql
 @SQL(command: "create table if not exists users(id text, username text);")
 type User {

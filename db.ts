@@ -1,6 +1,6 @@
 import Sqlite from "better-sqlite3";
 import { DocumentNode } from "graphql";
-import { createCommands } from "./parse";
+import { createCommands } from "./generate";
 
 const db = new Sqlite("sqlite.db", { verbose: console.log });
 

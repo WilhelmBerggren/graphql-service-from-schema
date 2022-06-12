@@ -2,7 +2,7 @@ import { ApolloServer } from "apollo-server";
 import fs from "fs";
 import { parse } from "graphql";
 import { initDb } from "./db";
-import { createCommands, createResolvers } from "./parse";
+import { createCommands, createResolvers } from "./generate";
 
 const typeDefs = parse(fs.readFileSync("schema.graphql").toString());
 

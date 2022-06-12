@@ -67,8 +67,5 @@ The entrypoint of the service. Parses the typeDefs, initialises the database and
 
 # TODO:
 
-- Dataloaders based on @key directive
-
-```
-
-```
+- Look into adding dataloaders based on @key directive
+- Better Federation support

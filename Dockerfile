@@ -4,7 +4,7 @@ WORKDIR /usr/app
 
 COPY . ./
 
-EXPOSE 4000
+EXPOSE 80
 
 RUN ["yarn"]
 

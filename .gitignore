@@ -2,3 +2,6 @@ node_modules
 .parcel-cache
 dist
 sqlite.db
+db.js
+generate.js
+server.js

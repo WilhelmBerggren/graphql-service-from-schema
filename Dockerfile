@@ -4,8 +4,10 @@ WORKDIR /usr/app
 
 COPY . ./
 
-RUN yarn
-
 EXPOSE 4000
+
+RUN ["yarn"]
+
+RUN ["yarn", "build"]
 
 CMD ["yarn", "start"]

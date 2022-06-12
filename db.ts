@@ -12,12 +12,13 @@ export const initDb = (typeDefs: DocumentNode) => {
 
 export const createMutation = (command: string) => (_: any, args: any) => {
   const id = Math.random().toString();
-  db.prepare(command).run(...Object.values({ id, ...args }));
+  db.prepare(command).run({ id, ...args });
   return { id, ...args };
 };
 
 export const createQuery =
-  (command: string, field: string) => (_: any, args: any) =>
-    db
+  (command: string, field: string) => (_: any, args: any) => {
+    return db
       .prepare(command)
-      [field[field.length - 1] === "s" ? "all" : "get"](...Object.values(args));
+      [field[field.length - 1] === "s" ? "all" : "get"](args);
+  };

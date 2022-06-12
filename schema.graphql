@@ -2,7 +2,7 @@ directive @SQL(command: String) on OBJECT | FIELD_DEFINITION
 
 type User
   @SQL(
-    command: "create table if not exists Users(\"id\" text, \"username\" text);"
+    command: "create table if not exists users(id text primary key, username text unique not null);"
   ) {
   id: ID!
   username: String!
@@ -10,21 +10,29 @@ type User
 
 type Book
   @SQL(
-    command: "create table if not exists Books(\"id\" text, \"title\" text);"
+    command: "create table if not exists Books(id text primary key, title text unique not null, userId text, foreign key (userId) references users (id));"
   ) {
   id: ID!
   title: String
+  userId: String
 }
 
 type Query {
+  user(id: ID!): User @SQL(command: "select * from users where id = :id")
   users(first: Int!, offset: Int!): [User]
-    @SQL(command: "select * from users limit ? offset ?")
-  books(first: Int!): [User] @SQL(command: "select * from books limit ?")
-  user(id: ID!): User @SQL(command: "select * from users where id = ?")
-  book(id: ID!): Book @SQL(command: "select * from books where id = ?")
+    @SQL(command: "select * from users limit :first offset :offset")
+  book(id: ID!): Book @SQL(command: "select * from books where id = :id")
+  books(first: Int!): [Book] @SQL(command: "select * from books limit :first")
 }
 
 type Mutation {
   createUser(username: String): User
-    @SQL(command: "insert into users ( id, username ) values ( ?, ? )")
+    @SQL(
+      command: "insert into users ( id, username ) values ( :id, :username )"
+    )
+
+  createBook(title: String!, userId: ID!): Book
+    @SQL(
+      command: "insert into books ( id, title, userId ) values ( :id, :title, :userId )"
+    )
 }

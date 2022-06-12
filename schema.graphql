@@ -6,6 +6,8 @@ type User
   ) {
   id: ID!
   username: String!
+  books(first: Int!): [Book]
+    @SQL(command: "select * from books where books.userId = :id limit :first")
 }
 
 type Book
@@ -15,6 +17,7 @@ type Book
   id: ID!
   title: String
   userId: String
+  user: User @SQL(command: "select * from users where users.id = :userId")
 }
 
 type Query {

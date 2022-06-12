@@ -10,15 +10,20 @@ export const initDb = (typeDefs: DocumentNode) => {
   );
 };
 
-export const createMutation = (command: string) => (_: any, args: any) => {
-  const id = Math.random().toString();
-  db.prepare(command).run({ id, ...args });
-  return { id, ...args };
-};
-
-export const createQuery =
-  (command: string, field: string) => (_: any, args: any) => {
-    return db
-      .prepare(command)
-      [field[field.length - 1] === "s" ? "all" : "get"](args);
+export const makeQuery =
+  (root: string, field: string, command: string) =>
+  (parent: any, args: any) => {
+    if (root === "Mutation") {
+      const id = Math.random().toString();
+      db.prepare(command).run({ id, ...args });
+      return { id, ...args };
+    } else {
+      return db
+        .prepare(command)
+        [field[field.length - 1] === "s" ? "all" : "get"]({
+          [field + "Id"]: parent?.[field + "Id"],
+          id: parent?.id,
+          ...args,
+        });
+    }
   };

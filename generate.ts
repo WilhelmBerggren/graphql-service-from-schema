@@ -5,7 +5,7 @@ import {
   ObjectTypeDefinitionNode,
   StringValueNode,
 } from "graphql";
-import { createMutation, createQuery } from "./db";
+import { makeQuery } from "./db";
 
 export const getCommands = (typeDefs: DocumentNode) => {
   return typeDefs.definitions
@@ -38,12 +38,9 @@ export const getResolvers = (typeDefs: DocumentNode) =>
               ).value,
             ])
             .filter(([_, command]) => Boolean(command))
-            .map(([name, command]) => [
-              name,
-              object.name.value === "Mutation"
-                ? createMutation(command)
-                : createQuery(command, name),
-            ])
+            .map(([name, command]) => {
+              return [name, makeQuery(object.name.value, name, command)];
+            })
         ),
       ])
   );

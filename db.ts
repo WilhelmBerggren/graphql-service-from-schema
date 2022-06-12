@@ -1,11 +1,11 @@
 import Sqlite from "better-sqlite3";
 import { DocumentNode } from "graphql";
-import { createCommands } from "./generate";
+import { getCommands } from "./generate";
 
 const db = new Sqlite("sqlite.db", { verbose: console.log });
 
 export const initDb = (typeDefs: DocumentNode) => {
-  Object.values(createCommands(typeDefs)).forEach((command) =>
+  Object.values(getCommands(typeDefs)).forEach((command) =>
     db.prepare(command).run()
   );
 };
